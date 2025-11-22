@@ -1,3 +1,4 @@
+const { ObjectId } = require("mongodb");
 const { parcelCollection } = require("../db.js");
 
 const postParcel = async (req, res) => {
@@ -69,4 +70,33 @@ const getAllParcel = async (req, res) => {
   }
 };
 
-module.exports = { postParcel, getAllParcel };
+const getParcelById = async (req, res) => {
+  const { id } = req.params;
+
+  if (id.length !== 24) {
+    res.status(400).send({
+      success: false,
+      message: "Invalid parcel id",
+    });
+  }
+
+  const query = { _id: new ObjectId(id) };
+
+  try {
+    const result = await parcelCollection.findOne(query);
+
+    res.send({
+      success: true,
+      message: "Parcel data retrieved successfully",
+      parcel: result,
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+module.exports = { postParcel, getAllParcel, getParcelById };

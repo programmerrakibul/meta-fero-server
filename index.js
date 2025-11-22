@@ -4,6 +4,7 @@ const express = require("express");
 const cors = require("cors");
 const { client } = require("./db.js");
 const { parcelsRouter } = require("./routes/parcelsRouter.js");
+const { checkoutRouter } = require("./routes/checkoutRouter.js");
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -20,6 +21,7 @@ const run = async () => {
     });
 
     app.use("/api/parcels", parcelsRouter);
+    app.use("/api/parcel-checkout", checkoutRouter);
 
     await client.db("admin").command({ ping: 1 });
     console.log("You successfully connected to MongoDB!");

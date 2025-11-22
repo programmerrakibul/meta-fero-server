@@ -22,6 +22,13 @@ const run = async () => {
 
     app.use("/api/parcels", parcelsRouter);
     app.use("/api/parcel-checkout", checkoutRouter);
+    app.get("/api/payment-history", (req, res) => {
+      const { email } = req.query;
+
+      if (!email) {
+        return res.status(400).send({ message: "Bad Request" });
+      }
+    });
 
     await client.db("admin").command({ ping: 1 });
     console.log("You successfully connected to MongoDB!");

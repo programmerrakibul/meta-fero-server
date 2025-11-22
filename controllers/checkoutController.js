@@ -6,8 +6,8 @@ const { parcelCollection, paymentsCollection } = require("../db.js");
 const createCheckout = async (req, res) => {
   const paymentInfo = req.body;
 
-
   const session = await stripe.checkout.sessions.create({
+    payment_method_types: ["card", "visa"],
     line_items: [
       {
         price_data: {
@@ -43,7 +43,6 @@ const updatePaymentStatus = async (req, res) => {
     metadata,
     payment_status,
   } = session || {};
-
 
   const isExist = await paymentsCollection.findOne({
     transaction_id: payment_intent,

@@ -1,6 +1,7 @@
 const stripe = require("stripe")(process.env.CHECKOUT_SECRET_KEY);
+const { nanoid } = require("nanoid");
 const { ObjectId } = require("mongodb");
-const { parcelCollection } = require("../db.js");
+const { parcelCollection, paymentsCollection } = require("../db.js");
 
 const createCheckout = async (req, res) => {
   const paymentInfo = req.body;
@@ -21,6 +22,7 @@ const createCheckout = async (req, res) => {
     mode: "payment",
     metadata: {
       parcel_id: paymentInfo.parcel_id,
+      customer_name: paymentInfo.sender_name,
     },
     customer_email: paymentInfo.sender_email,
     success_url: `${process.env.SITE_DOMAIN}/dashboard/payment-success?session_id={CHECKOUT_SESSION_ID}`,
@@ -33,22 +35,49 @@ const createCheckout = async (req, res) => {
 const updatePaymentStatus = async (req, res) => {
   const { session_id } = req.params;
   const session = await stripe.checkout.sessions.retrieve(session_id);
+  const {
+    customer_email,
+    payment_intent,
+    amount_total,
+    metadata,
+    payment_status,
+  } = session || {};
 
-  if (session.payment_status === "paid") {
-    const { parcel_id } = session.metadata;
+  const isExist = await paymentsCollection.findOne({
+    transaction_id: payment_intent,
+  });
+
+  if (isExist) {
+    return res.send({ message: "Already Exist!" });
+  }
+
+  if (payment_status === "paid") {
+    const { parcel_id } = metadata;
     const query = { _id: new ObjectId(parcel_id) };
+    const tracking_id = `PRCL-${nanoid()}`;
+    const transaction_id = payment_intent;
 
-    const update = {
-      $set: {
-        payment_status: "paid",
-      },
+    const paymentInfo = {
+      customer_email,
+      amount_total,
+      transaction_id,
+      tracking_id,
+      paid_at: new Date().toISOString(),
+      customer_name: metadata.customer_name,
     };
 
-    const result = await parcelCollection.updateOne(query, update);
+    const update = {
+      $set: { payment_status },
+    };
 
-    res.send({
+    await parcelCollection.updateOne(query, update);
+    const result = await paymentsCollection.insertOne(paymentInfo);
+
+    return res.send({
       success: true,
-      customer_email: session.customer_email,
+      customer_email,
+      transaction_id,
+      tracking_id,
       ...result,
     });
   }

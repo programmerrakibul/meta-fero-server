@@ -6,6 +6,7 @@ const { parcelCollection, paymentsCollection } = require("../db.js");
 const createCheckout = async (req, res) => {
   const paymentInfo = req.body;
 
+
   const session = await stripe.checkout.sessions.create({
     line_items: [
       {
@@ -43,12 +44,13 @@ const updatePaymentStatus = async (req, res) => {
     payment_status,
   } = session || {};
 
+
   const isExist = await paymentsCollection.findOne({
     transaction_id: payment_intent,
   });
 
   if (isExist) {
-    return res.send({ message: "Already Exist!" });
+    return res.send({ message: "Already Exist!", isExist: true });
   }
 
   if (payment_status === "paid") {
@@ -59,7 +61,7 @@ const updatePaymentStatus = async (req, res) => {
 
     const paymentInfo = {
       customer_email,
-      amount_total,
+      amount_total: amount_total / 100,
       transaction_id,
       tracking_id,
       paid_at: new Date().toISOString(),

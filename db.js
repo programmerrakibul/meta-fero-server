@@ -11,7 +11,13 @@ const client = new MongoClient(uri, {
 });
 
 const database = client.db("meta-fero");
+const usersCollection = database.collection("users");
 const parcelCollection = database.collection("parcels");
 const paymentsCollection = database.collection("payments");
 
-module.exports = { client, parcelCollection, paymentsCollection };
+module.exports = {
+  client,
+  usersCollection,
+  parcelCollection,
+  paymentsCollection,
+};

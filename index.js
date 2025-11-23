@@ -5,6 +5,7 @@ const cors = require("cors");
 const { client, paymentsCollection } = require("./db.js");
 const { parcelsRouter } = require("./routes/parcelsRouter.js");
 const { checkoutRouter } = require("./routes/checkoutRouter.js");
+const { usersRouter } = require("./routes/usersRouter.js");
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -20,6 +21,7 @@ const run = async () => {
       res.send("Server is running");
     });
 
+    app.use('/api/users', usersRouter)
     app.use("/api/parcels", parcelsRouter);
     app.use("/api/parcel-checkout", checkoutRouter);
     app.get("/api/payment-history", async (req, res) => {

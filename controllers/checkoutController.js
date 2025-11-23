@@ -23,7 +23,7 @@ const createCheckout = async (req, res) => {
     mode: "payment",
     metadata: {
       parcel_id: paymentInfo.parcel_id,
-      customer_name: paymentInfo.sender_name,
+      parcel_name: paymentInfo.parcel_name,
     },
     customer_email: paymentInfo.sender_email,
     success_url: `${process.env.SITE_DOMAIN}/dashboard/payment-success?session_id={CHECKOUT_SESSION_ID}`,
@@ -53,18 +53,18 @@ const updatePaymentStatus = async (req, res) => {
   }
 
   if (payment_status === "paid") {
-    const { parcel_id } = metadata;
+    const { parcel_id, parcel_name } = metadata;
     const query = { _id: new ObjectId(parcel_id) };
     const tracking_id = `PRCL-${nanoid()}`;
     const transaction_id = payment_intent;
 
     const paymentInfo = {
+      parcel_name,
       customer_email,
       amount_total: amount_total / 100,
       transaction_id,
       tracking_id,
       paid_at: new Date().toISOString(),
-      customer_name: metadata.customer_name,
     };
 
     const update = {

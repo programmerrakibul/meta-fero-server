@@ -2,6 +2,8 @@ const { usersCollection } = require("../db.js");
 
 const postUserData = async (req, res) => {
   const newUser = req.body;
+  newUser.created_at = new Date().toISOString();
+  newUser.role = "user";
 
   try {
     const isExist = await usersCollection.findOne({ email: newUser.email });

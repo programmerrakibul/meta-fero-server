@@ -36,6 +36,7 @@ const createCheckout = async (req, res) => {
 const updatePaymentStatus = async (req, res) => {
   const { session_id } = req.params;
   const session = await stripe.checkout.sessions.retrieve(session_id);
+
   const {
     customer_email,
     payment_intent,
@@ -43,14 +44,6 @@ const updatePaymentStatus = async (req, res) => {
     metadata,
     payment_status,
   } = session || {};
-
-  const isExist = await paymentsCollection.findOne({
-    transaction_id: payment_intent,
-  });
-
-  if (isExist) {
-    return res.send({ message: "Already Exist!", isExist: true });
-  }
 
   if (payment_status === "paid") {
     const { parcel_id, parcel_name } = metadata;
@@ -68,19 +61,36 @@ const updatePaymentStatus = async (req, res) => {
     };
 
     const update = {
-      $set: { payment_status },
+      $set: { payment_status, tracking_id },
     };
 
     await parcelCollection.updateOne(query, update);
-    const result = await paymentsCollection.insertOne(paymentInfo);
+    const result = await paymentsCollection.updateOne(
+      { transaction_id },
+      { $setOnInsert: paymentInfo },
+      { upsert: true }
+    );
 
-    return res.send({
-      success: true,
-      customer_email,
-      transaction_id,
-      tracking_id,
-      ...result,
-    });
+    if (result.upsertedId) {
+      // New payment created
+      return res.send({
+        success: true,
+        customer_email,
+        transaction_id,
+        tracking_id,
+        isNew: true,
+      });
+    } else {
+      // Payment already existed
+      const existing = await paymentsCollection.findOne({ transaction_id });
+      return res.send({
+        success: true,
+        customer_email,
+        transaction_id,
+        tracking_id: existing.tracking_id,
+        isNew: false,
+      });
+    }
   }
 
   res.send({

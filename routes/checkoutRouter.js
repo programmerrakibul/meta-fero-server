@@ -8,6 +8,6 @@ const checkoutRouter = express.Router();
 
 checkoutRouter.post("/", createCheckout);
 
-checkoutRouter.put("/status/:session_id", updatePaymentStatus);
+checkoutRouter.patch("/status/:session_id", updatePaymentStatus);
 
 module.exports = { checkoutRouter };

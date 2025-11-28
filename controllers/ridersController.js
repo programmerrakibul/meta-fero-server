@@ -1,3 +1,4 @@
+const { ObjectId } = require("mongodb");
 const { ridersCollection } = require("../db.js");
 
 const postRiderData = async (req, res) => {
@@ -49,4 +50,37 @@ const getRidersData = async (req, res) => {
   }
 };
 
-module.exports = { postRiderData, getRidersData };
+const updateRiderDataById = async (req, res) => {
+  const { riderId } = req.params;
+
+  if (riderId.length !== 24) {
+    return res.status(400).send({
+      message: "Invalid ID",
+    });
+  }
+
+  const filter = { _id: new ObjectId(riderId) };
+
+  const updatedDoc = {
+    $set: req.body,
+  };
+
+  try {
+    const result = await ridersCollection.updateOne(filter, updatedDoc);
+
+    res.send({
+      success: true,
+      message: "Rider data successfully updated",
+      ...result,
+    });
+  } catch (err) {
+    console.log(err);
+
+    res.status(500).send({
+      success: false,
+      message: "Rider data update failed",
+    });
+  }
+};
+
+module.exports = { postRiderData, getRidersData, updateRiderDataById };

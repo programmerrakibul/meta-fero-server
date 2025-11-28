@@ -30,4 +30,23 @@ const postRiderData = async (req, res) => {
   }
 };
 
-module.exports = { postRiderData };
+const getRidersData = async (req, res) => {
+  try {
+    const result = await ridersCollection.find({}).toArray();
+
+    res.send({
+      success: true,
+      message: "Rider data successfully retrieved",
+      riders: result,
+    });
+  } catch (err) {
+    console.log(err);
+
+    res.status(500).send({
+      success: false,
+      message: "Rider data retrieved failed",
+    });
+  }
+};
+
+module.exports = { postRiderData, getRidersData };

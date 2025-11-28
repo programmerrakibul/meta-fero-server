@@ -60,4 +60,25 @@ const updateUserDataById = async (req, res) => {
   }
 };
 
-module.exports = { postUserData, updateUserDataById };
+const getUsersData = async (req, res) => {
+  const filter = {};
+
+  try {
+    const result = await usersCollection.find(filter).toArray();
+
+    res.send({
+      success: true,
+      message: "Users data retrieved successfully",
+      users: result,
+    });
+  } catch (err) {
+    console.log(err);
+
+    res.status(500).send({
+      success: false,
+      message: "Users data retrieved failed",
+    });
+  }
+};
+
+module.exports = { postUserData, updateUserDataById, getUsersData };

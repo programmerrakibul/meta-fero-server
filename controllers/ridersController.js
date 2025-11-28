@@ -1,5 +1,5 @@
 const { ObjectId } = require("mongodb");
-const { ridersCollection } = require("../db.js");
+const { ridersCollection, usersCollection } = require("../db.js");
 
 const postRiderData = async (req, res) => {
   const newRider = req.body;
@@ -50,7 +50,7 @@ const getRidersData = async (req, res) => {
   }
 };
 
-const updateRiderDataById = async (req, res) => {
+const updateRiderStatus = async (req, res) => {
   const { riderId } = req.params;
 
   if (riderId.length !== 24) {
@@ -68,6 +68,19 @@ const updateRiderDataById = async (req, res) => {
   try {
     const result = await ridersCollection.updateOne(filter, updatedDoc);
 
+    if (result.modifiedCount && req.body?.status === "approved") {
+      const result = await usersCollection.updateOne(
+        {
+          email: req.body.rider_email,
+        },
+        {
+          $set: {
+            role: "rider",
+          },
+        }
+      );
+    }
+
     res.send({
       success: true,
       message: "Rider data successfully updated",
@@ -83,4 +96,4 @@ const updateRiderDataById = async (req, res) => {
   }
 };
 
-module.exports = { postRiderData, getRidersData, updateRiderDataById };
+module.exports = { postRiderData, getRidersData, updateRiderStatus };

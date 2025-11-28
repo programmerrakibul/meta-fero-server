@@ -1,3 +1,4 @@
+const { ObjectId } = require("mongodb");
 const { usersCollection } = require("../db.js");
 
 const postUserData = async (req, res) => {
@@ -27,4 +28,36 @@ const postUserData = async (req, res) => {
   }
 };
 
-module.exports = { postUserData };
+const updateUserDataById = async (req, res) => {
+  const { id } = req.params;
+
+  if (id.length !== 24) {
+    return res.status(400).send({
+      message: "Invalid ID",
+    });
+  }
+
+  const filter = { _id: new ObjectId(id) };
+  const updatedDoc = {
+    $set: req.body,
+  };
+
+  try {
+    const result = await usersCollection.updateOne(filter, updatedDoc);
+
+    res.send({
+      success: true,
+      message: "User data updated successfully",
+      ...result,
+    });
+  } catch (err) {
+    console.log(err);
+
+    res.status(500).send({
+      success: false,
+      message: "User data update failed",
+    });
+  }
+};
+
+module.exports = { postUserData, updateUserDataById };

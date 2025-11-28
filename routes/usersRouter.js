@@ -1,7 +1,12 @@
 const express = require("express");
-const { postUserData } = require("../controllers/usersController.js");
+const {
+  postUserData,
+  updateUserDataById,
+} = require("../controllers/usersController.js");
 const usersRouter = express.Router();
 
-usersRouter.post('/', postUserData)
+usersRouter.post("/", postUserData);
 
-module.exports = {usersRouter}
+usersRouter.patch("/:id", updateUserDataById);
+
+module.exports = { usersRouter };

@@ -52,6 +52,7 @@ const getRidersData = async (req, res) => {
 
 const updateRiderStatus = async (req, res) => {
   const { riderId } = req.params;
+  const { status } = req.body;
 
   if (riderId.length !== 24) {
     return res.status(400).send({
@@ -61,9 +62,20 @@ const updateRiderStatus = async (req, res) => {
 
   const filter = { _id: new ObjectId(riderId) };
 
-  const updatedDoc = {
-    $set: req.body,
-  };
+  let updatedDoc = {};
+
+  if (status === "approved") {
+    updatedDoc = {
+      $set: {
+        status,
+        work_status: "available",
+      },
+    };
+  } else {
+    updatedDoc = {
+      $set: req.body,
+    };
+  }
 
   try {
     const result = await ridersCollection.updateOne(filter, updatedDoc);

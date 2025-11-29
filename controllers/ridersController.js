@@ -32,8 +32,23 @@ const postRiderData = async (req, res) => {
 };
 
 const getRidersData = async (req, res) => {
+  const { status, work_status, rider_district } = req.query;
+  const query = {};
+
+  if (status) {
+    query.status = status;
+  }
+
+  if (work_status) {
+    query.work_status = work_status;
+  }
+
+  if (rider_district) {
+    query.rider_district = rider_district;
+  }
+
   try {
-    const result = await ridersCollection.find({}).toArray();
+    const result = await ridersCollection.find(query).toArray();
 
     res.send({
       success: true,

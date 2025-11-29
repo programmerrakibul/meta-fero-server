@@ -7,12 +7,15 @@ const { parcelsRouter } = require("./routes/parcelsRouter.js");
 const { checkoutRouter } = require("./routes/checkoutRouter.js");
 const { usersRouter } = require("./routes/usersRouter.js");
 const { ridersRouter } = require("./routes/ridersRouter.js");
+const { validateToken } = require("./middleware/validateToken.js");
+const { verifyToken } = require("./middleware/verifyToken.js");
 
 const app = express();
 const port = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
+app.use(validateToken, verifyToken);
 
 const run = async () => {
   try {
@@ -22,8 +25,8 @@ const run = async () => {
       res.send("Server is running");
     });
 
-    app.use('/api/users', usersRouter)
-    app.use('/api/riders', ridersRouter)
+    app.use("/api/users", usersRouter);
+    app.use("/api/riders", ridersRouter);
     app.use("/api/parcels", parcelsRouter);
     app.use("/api/parcel-checkout", checkoutRouter);
     app.get("/api/payment-history", async (req, res) => {
@@ -41,7 +44,7 @@ const run = async () => {
         res.send({
           success: true,
           message: "Payment history retrieved successfully",
-          payments: result
+          payments: result,
         });
       } catch (err) {
         console.log(err);

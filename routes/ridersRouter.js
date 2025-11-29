@@ -4,6 +4,7 @@ const {
   getRidersData,
   updateRiderStatus,
 } = require("../controllers/ridersController.js");
+
 const ridersRouter = express.Router();
 
 ridersRouter.get("/", getRidersData);

@@ -1,4 +1,4 @@
-export const validateToken = async (req, res, next) => {
+const validateToken = async (req, res, next) => {
   const { authorization } = req.headers;
 
   if (!authorization) {
@@ -19,3 +19,5 @@ export const validateToken = async (req, res, next) => {
 
   next();
 };
+
+module.exports = { validateToken };

@@ -5,10 +5,10 @@ const {
   getUsersData,
   getUserRoll,
 } = require("../controllers/usersController.js");
-const { validateToken } = require("../middleware/validateToken.js");
+
 const usersRouter = express.Router();
 
-usersRouter.get("/", validateToken, getUsersData);
+usersRouter.get("/", getUsersData);
 
 usersRouter.get("/:email/role", getUserRoll);
 

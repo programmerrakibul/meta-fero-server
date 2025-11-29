@@ -1,5 +1,5 @@
 const { ObjectId } = require("mongodb");
-const { parcelCollection } = require("../db.js");
+const { parcelCollection, ridersCollection } = require("../db.js");
 
 const postParcel = async (req, res) => {
   const newParcel = req.body;
@@ -103,4 +103,51 @@ const getParcelById = async (req, res) => {
   }
 };
 
-module.exports = { postParcel, getAllParcel, getParcelById };
+const updateParcelDataAndRiderStatus = async (req, res) => {
+  const { id } = req.params;
+  const { rider_id, rider_name, rider_email } = req.body;
+
+  try {
+    const result = await parcelCollection.updateOne(
+      { _id: new ObjectId(id) },
+      {
+        $set: {
+          delivery_status: "rider_assigned",
+          rider_name,
+          rider_email,
+        },
+      }
+    );
+
+    await ridersCollection.updateOne(
+      {
+        _id: new ObjectId(rider_id),
+      },
+      {
+        $set: {
+          work_status: "in_delivery",
+        },
+      }
+    );
+
+    res.send({
+      success: true,
+      message: "Parcel data and rider status updated",
+      ...result,
+    });
+  } catch (err) {
+    console.log(err);
+
+    res.status(500).send({
+      success: false,
+      message: "Parcel Data update failed",
+    });
+  }
+};
+
+module.exports = {
+  postParcel,
+  getAllParcel,
+  getParcelById,
+  updateParcelDataAndRiderStatus,
+};

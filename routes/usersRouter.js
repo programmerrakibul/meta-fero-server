@@ -5,10 +5,11 @@ const {
   getUsersData,
   getUserRoll,
 } = require("../controllers/usersController.js");
+const { verifyAdmin } = require("../middleware/verifyAdmin.js");
 
 const usersRouter = express.Router();
 
-usersRouter.get("/", getUsersData);
+usersRouter.get("/", verifyAdmin, getUsersData);
 
 usersRouter.get("/:email/role", getUserRoll);
 

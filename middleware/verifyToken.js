@@ -15,12 +15,12 @@ const verifyToken = async (req, res, next) => {
   const decoded = await admin.auth().verifyIdToken(idToken);
 
   if (!decoded) {
-    return res.status(403).send({
-      message: "Forbidden access",
+    return res.status(401).send({
+      message: "Unauthorized access",
     });
   }
 
-  req.token_email = decoded.email;
+  req.decoded_email = decoded.email;
   next();
 };
 

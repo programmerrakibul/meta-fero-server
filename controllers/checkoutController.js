@@ -61,7 +61,7 @@ const updatePaymentStatus = async (req, res) => {
     };
 
     const update = {
-      $set: { payment_status, tracking_id },
+      $set: { payment_status, tracking_id, delivery_status: "pending_pickup" },
     };
 
     await parcelCollection.updateOne(query, update);

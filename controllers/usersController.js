@@ -81,4 +81,31 @@ const getUsersData = async (req, res) => {
   }
 };
 
-module.exports = { postUserData, updateUserDataById, getUsersData };
+const getUserRoll = async (req, res) => {
+  const { email } = req.params;
+
+  const filter = { email };
+
+  try {
+    const result = await usersCollection.findOne(filter);
+
+    res.send({
+      success: true,
+      role: result.role || "user",
+    });
+  } catch (err) {
+    console.log(err);
+
+    res.status(500).send({
+      success: false,
+      message: "User role retrieved failed",
+    });
+  }
+};
+
+module.exports = {
+  postUserData,
+  updateUserDataById,
+  getUsersData,
+  getUserRoll,
+};

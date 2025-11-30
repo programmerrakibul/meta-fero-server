@@ -10,6 +10,7 @@ const postParcel = async (req, res) => {
 
   try {
     const result = await parcelCollection.insertOne(newParcel);
+    await trackingLog("parcel_created", tracking_id);
 
     res.send({
       success: true,

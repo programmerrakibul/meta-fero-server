@@ -150,9 +150,45 @@ const updateParcelDataAndRiderStatus = async (req, res) => {
   }
 };
 
+const updateDeliveryStatus = async (req, res) => {
+  const { id } = req.params;
+  const { rider_email, delivery_status, work_status } = req.body;
+  const parcelQuery = { _id: new ObjectId(id) };
+  const riderQuery = { rider_email };
+  const updatedRiderStatus = {};
+
+  if (work_status) {
+    updatedRiderStatus.work_status = work_status;
+  }
+
+  try {
+    const result = await parcelCollection.updateOne(parcelQuery, {
+      $set: { delivery_status },
+    });
+
+    await ridersCollection.updateOne(riderQuery, {
+      $set: updatedRiderStatus,
+    });
+
+    res.send({
+      success: true,
+      message: "Successfully updated",
+      ...result,
+    });
+  } catch (err) {
+    console.log(err);
+
+    res.status(500).send({
+      success: false,
+      message: "Status update failed",
+    });
+  }
+};
+
 module.exports = {
   postParcel,
   getAllParcel,
   getParcelById,
   updateParcelDataAndRiderStatus,
+  updateDeliveryStatus,
 };

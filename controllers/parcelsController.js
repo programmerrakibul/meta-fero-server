@@ -34,7 +34,7 @@ const getAllParcel = async (req, res) => {
 
   if (delivery_status) {
     query.delivery_status = {
-      $nin: [...delivery_status],
+      $nin: [delivery_status],
     };
   }
 

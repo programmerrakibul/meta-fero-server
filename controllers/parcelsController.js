@@ -23,9 +23,14 @@ const postParcel = async (req, res) => {
 const getAllParcel = async (req, res) => {
   const query = {};
   let projectFiled = {};
-  const { uid, fields, excludes, limit, skip, delivery_status } = req.query;
+  const { uid, fields, excludes, limit, skip, delivery_status, rider_email } =
+    req.query;
   const limitNum = Number(limit) || 0;
   const skipNum = Number(skip) || 0;
+
+  if (rider_email) {
+    query.rider_email = rider_email;
+  }
 
   if (delivery_status) {
     query.delivery_status = delivery_status;

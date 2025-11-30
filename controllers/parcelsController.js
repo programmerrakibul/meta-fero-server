@@ -157,13 +157,14 @@ const updateDeliveryStatus = async (req, res) => {
   const { rider_email, delivery_status, work_status } = req.body;
   const parcelQuery = { _id: new ObjectId(id) };
   const riderQuery = { rider_email };
-  let updatedRiderStatus = {};
   let updatedParcelStatus = {};
 
   if (delivery_status === "pending_pickup") {
     updatedParcelStatus = {
       $set: {
         delivery_status,
+      },
+      $unset: {
         rider_name: "",
         rider_email: "",
       },

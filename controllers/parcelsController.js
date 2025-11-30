@@ -33,7 +33,9 @@ const getAllParcel = async (req, res) => {
   }
 
   if (delivery_status) {
-    query.delivery_status = delivery_status;
+    query.delivery_status = {
+      $nin: [...delivery_status],
+    };
   }
 
   if (uid) {
@@ -155,20 +157,32 @@ const updateDeliveryStatus = async (req, res) => {
   const { rider_email, delivery_status, work_status } = req.body;
   const parcelQuery = { _id: new ObjectId(id) };
   const riderQuery = { rider_email };
-  const updatedRiderStatus = {};
+  let updatedRiderStatus = {};
+  let updatedParcelStatus = {};
 
-  if (work_status) {
-    updatedRiderStatus.work_status = work_status;
+  if (delivery_status === "pending_pickup") {
+    updatedParcelStatus = {
+      $set: {
+        delivery_status,
+        rider_name: "",
+        rider_email: "",
+      },
+    };
+  } else {
+    updatedParcelStatus = {
+      $set: { delivery_status },
+    };
   }
 
   try {
-    const result = await parcelCollection.updateOne(parcelQuery, {
-      $set: { delivery_status },
-    });
+    const result = await parcelCollection.updateOne(
+      parcelQuery,
+      updatedParcelStatus
+    );
 
-    await ridersCollection.updateOne(riderQuery, {
-      $set: updatedRiderStatus,
-    });
+    if (work_status) {
+      await ridersCollection.updateOne(riderQuery, { $set: { work_status } });
+    }
 
     res.send({
       success: true,

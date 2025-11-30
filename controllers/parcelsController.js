@@ -1,8 +1,12 @@
 const { ObjectId } = require("mongodb");
 const { parcelCollection, ridersCollection } = require("../db.js");
+const { trackingLog } = require("../utilities/trackingLog.js");
+const { nanoid } = require("nanoid");
 
 const postParcel = async (req, res) => {
   const newParcel = req.body;
+  const tracking_id = `MF-PRCL-${nanoid()}`;
+  newParcel.tracking_id = tracking_id;
 
   try {
     const result = await parcelCollection.insertOne(newParcel);
@@ -39,8 +43,6 @@ const getAllParcel = async (req, res) => {
   } else {
     query.delivery_status = delivery_status;
   }
-
-  console.log(delivery_status);
 
   if (uid) {
     query.uid = uid;
@@ -116,19 +118,22 @@ const getParcelById = async (req, res) => {
 
 const updateParcelDataAndRiderStatus = async (req, res) => {
   const { id } = req.params;
-  const { rider_id, rider_name, rider_email } = req.body;
+  const { rider_id, rider_name, rider_email, tracking_id } = req.body;
+  const delivery_status = "rider_assigned";
 
   try {
     const result = await parcelCollection.updateOne(
       { _id: new ObjectId(id) },
       {
         $set: {
-          delivery_status: "rider_assigned",
+          delivery_status,
           rider_name,
           rider_email,
         },
       }
     );
+
+    await trackingLog(delivery_status, tracking_id);
 
     await ridersCollection.updateOne(
       {
@@ -184,6 +189,17 @@ const updateDeliveryStatus = async (req, res) => {
       parcelQuery,
       updatedParcelStatus
     );
+
+    const parcel = await parcelCollection.findOne(parcelQuery);
+    const tracking_id = parcel.tracking_id;
+
+    if (delivery_status === "rider_arriving") {
+      await trackingLog(delivery_status, tracking_id);
+    } else if (delivery_status === "parcel_picked_up") {
+      await trackingLog(delivery_status, tracking_id);
+    } else if (delivery_status === "parcel_delivered") {
+      await trackingLog(delivery_status, tracking_id);
+    }
 
     if (work_status) {
       await ridersCollection.updateOne(riderQuery, { $set: { work_status } });

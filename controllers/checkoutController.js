@@ -1,10 +1,11 @@
 const stripe = require("stripe")(process.env.CHECKOUT_SECRET_KEY);
-const { nanoid } = require("nanoid");
 const { ObjectId } = require("mongodb");
 const { parcelCollection, paymentsCollection } = require("../db.js");
+const { trackingLog } = require("../utilities/trackingLog.js");
 
 const createCheckout = async (req, res) => {
-  const paymentInfo = req.body;
+  const { deliveryCharge, parcel_name, parcel_id, sender_email, tracking_id } =
+    req.body;
 
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ["card"],
@@ -12,9 +13,9 @@ const createCheckout = async (req, res) => {
       {
         price_data: {
           currency: "usd",
-          unit_amount: paymentInfo.deliveryCharge * 100,
+          unit_amount: deliveryCharge * 100,
           product_data: {
-            name: paymentInfo.parcel_name,
+            name: parcel_name,
           },
         },
         quantity: 1,
@@ -22,10 +23,11 @@ const createCheckout = async (req, res) => {
     ],
     mode: "payment",
     metadata: {
-      parcel_id: paymentInfo.parcel_id,
-      parcel_name: paymentInfo.parcel_name,
+      parcel_id,
+      parcel_name,
+      tracking_id,
     },
-    customer_email: paymentInfo.sender_email,
+    customer_email: sender_email,
     success_url: `${process.env.SITE_DOMAIN}/dashboard/payment-success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${process.env.SITE_DOMAIN}/dashboard/my-parcels`,
   });
@@ -34,34 +36,35 @@ const createCheckout = async (req, res) => {
 };
 
 const updatePaymentStatus = async (req, res) => {
-  const { session_id } = req.params;
-  const session = await stripe.checkout.sessions.retrieve(session_id);
+  const session = await stripe.checkout.sessions.retrieve(
+    req.params.session_id
+  );
 
   const {
     customer_email,
     payment_intent,
     amount_total,
-    metadata,
+    metadata: { parcel_id, parcel_name, tracking_id },
     payment_status,
   } = session || {};
 
   if (payment_status === "paid") {
-    const { parcel_id, parcel_name } = metadata;
     const query = { _id: new ObjectId(parcel_id) };
-    const tracking_id = `PRCL-${nanoid()}`;
     const transaction_id = payment_intent;
 
     const paymentInfo = {
       parcel_name,
       customer_email,
-      amount_total: amount_total / 100,
-      transaction_id,
       tracking_id,
+      transaction_id,
+      amount_total: amount_total / 100,
       paid_at: new Date().toISOString(),
     };
 
+    const delivery_status = "pending_pickup";
+
     const update = {
-      $set: { payment_status, tracking_id, delivery_status: "pending_pickup" },
+      $set: { payment_status, delivery_status },
     };
 
     await parcelCollection.updateOne(query, update);
@@ -72,7 +75,8 @@ const updatePaymentStatus = async (req, res) => {
     );
 
     if (result.upsertedId) {
-      // New payment created
+      await trackingLog(delivery_status, tracking_id);
+
       return res.send({
         success: true,
         customer_email,
@@ -81,13 +85,11 @@ const updatePaymentStatus = async (req, res) => {
         isNew: true,
       });
     } else {
-      // Payment already existed
-      const existing = await paymentsCollection.findOne({ transaction_id });
       return res.send({
         success: true,
         customer_email,
         transaction_id,
-        tracking_id: existing.tracking_id,
+        tracking_id,
         isNew: false,
       });
     }

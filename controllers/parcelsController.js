@@ -32,11 +32,15 @@ const getAllParcel = async (req, res) => {
     query.rider_email = rider_email;
   }
 
-  if (delivery_status) {
+  if (delivery_status !== "parcel_delivered") {
     query.delivery_status = {
-      $nin: [delivery_status],
+      $nin: ["parcel_delivered"],
     };
+  } else {
+    query.delivery_status = delivery_status;
   }
+
+  console.log(delivery_status);
 
   if (uid) {
     query.uid = uid;

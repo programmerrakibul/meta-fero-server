@@ -9,13 +9,13 @@ const { usersRouter } = require("./routes/usersRouter.js");
 const { ridersRouter } = require("./routes/ridersRouter.js");
 const { validateToken } = require("./middleware/validateToken.js");
 const { verifyToken } = require("./middleware/verifyToken.js");
+const { trackingsRouter } = require("./routes/trackingsRouter.js");
 
 const app = express();
 const port = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
-app.use(validateToken, verifyToken);
 
 const run = async () => {
   try {
@@ -25,35 +25,41 @@ const run = async () => {
       res.send("Server is running");
     });
 
-    app.use("/api/users", usersRouter);
-    app.use("/api/riders", ridersRouter);
-    app.use("/api/parcels", parcelsRouter);
-    app.use("/api/parcel-checkout", checkoutRouter);
-    app.get("/api/payment-history", async (req, res) => {
-      const { email } = req.query;
+    app.use("/api/trackings", trackingsRouter);
+    app.use("/api/users", validateToken, verifyToken, usersRouter);
+    app.use("/api/riders", validateToken, verifyToken, ridersRouter);
+    app.use("/api/parcels", validateToken, verifyToken, parcelsRouter);
+    app.use("/api/parcel-checkout", validateToken, verifyToken, checkoutRouter);
+    app.get(
+      "/api/payment-history",
+      validateToken,
+      verifyToken,
+      async (req, res) => {
+        const { email } = req.query;
 
-      if (!email) {
-        return res.status(400).send({ message: "Bad Request" });
+        if (!email) {
+          return res.status(400).send({ message: "Bad Request" });
+        }
+
+        try {
+          const result = await paymentsCollection
+            .find({ customer_email: email })
+            .toArray();
+
+          res.send({
+            success: true,
+            message: "Payment history retrieved successfully",
+            payments: result,
+          });
+        } catch (err) {
+          console.log(err);
+          res.status(500).send({
+            success: false,
+            message: "Payment history retrieved failed",
+          });
+        }
       }
-
-      try {
-        const result = await paymentsCollection
-          .find({ customer_email: email })
-          .toArray();
-
-        res.send({
-          success: true,
-          message: "Payment history retrieved successfully",
-          payments: result,
-        });
-      } catch (err) {
-        console.log(err);
-        res.status(500).send({
-          success: false,
-          message: "Payment history retrieved failed",
-        });
-      }
-    });
+    );
 
     await client.db("admin").command({ ping: 1 });
     console.log("You successfully connected to MongoDB!");

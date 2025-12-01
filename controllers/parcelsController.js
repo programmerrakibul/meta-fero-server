@@ -111,7 +111,6 @@ const getParcelById = async (req, res) => {
       parcel: result,
     });
   } catch (err) {
-    console.log(err);
     res.status(500).send({
       success: false,
       message: "Internal Server Error",
@@ -155,8 +154,6 @@ const updateParcelDataAndRiderStatus = async (req, res) => {
       ...result,
     });
   } catch (err) {
-    console.log(err);
-
     res.status(500).send({
       success: false,
       message: "Parcel Data update failed",
@@ -214,8 +211,6 @@ const updateDeliveryStatus = async (req, res) => {
       ...result,
     });
   } catch (err) {
-    console.log(err);
-
     res.status(500).send({
       success: false,
       message: "Status update failed",
@@ -251,8 +246,6 @@ const deliveryStatusStats = async (req, res) => {
       stats: result,
     });
   } catch (err) {
-    console.log(err);
-
     res.status(500).send({
       success: false,
       message: "Delivery status stats data retrieved failed",

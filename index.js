@@ -35,7 +35,7 @@ const run = async () => {
       verifyRider,
       ridersRouter
     );
-    app.use("/api/parcels",  parcelsRouter);
+    app.use("/api/parcels", validateToken, verifyToken, parcelsRouter);
     app.use("/api/parcel-checkout", validateToken, verifyToken, checkoutRouter);
     app.get(
       "/api/payment-history",
@@ -58,8 +58,7 @@ const run = async () => {
             message: "Payment history retrieved successfully",
             payments: result,
           });
-        } catch (err) {
-          console.log(err);
+        } catch {
           res.status(500).send({
             success: false,
             message: "Payment history retrieved failed",

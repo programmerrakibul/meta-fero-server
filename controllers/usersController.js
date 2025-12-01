@@ -51,8 +51,6 @@ const updateUserDataById = async (req, res) => {
       ...result,
     });
   } catch (err) {
-    console.log(err);
-
     res.status(500).send({
       success: false,
       message: "User data update failed",
@@ -72,8 +70,6 @@ const getUsersData = async (req, res) => {
       users: result,
     });
   } catch (err) {
-    console.log(err);
-
     res.status(500).send({
       success: false,
       message: "Users data retrieved failed",
@@ -94,8 +90,6 @@ const getUserRoll = async (req, res) => {
       role: result.role || "user",
     });
   } catch (err) {
-    console.log(err);
-
     res.status(500).send({
       success: false,
       message: "User role retrieved failed",

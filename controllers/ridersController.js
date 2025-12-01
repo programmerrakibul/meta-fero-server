@@ -1,5 +1,9 @@
 const { ObjectId } = require("mongodb");
-const { ridersCollection, usersCollection } = require("../db.js");
+const {
+  ridersCollection,
+  usersCollection,
+  parcelCollection,
+} = require("../db.js");
 
 const postRiderData = async (req, res) => {
   const newRider = req.body;
@@ -56,11 +60,63 @@ const getRidersData = async (req, res) => {
       riders: result,
     });
   } catch (err) {
-    console.log(err);
-
     res.status(500).send({
       success: false,
       message: "Rider data retrieved failed",
+    });
+  }
+};
+
+const getPerDayDeliveryStats = async (req, res) => {
+  const { email } = req.query;
+  const pipeline = [
+    {
+      $match: {
+        rider_email: email,
+        delivery_status: "parcel_delivered",
+      },
+    },
+    {
+      $lookup: {
+        from: "trackings",
+        localField: "tracking_id",
+        foreignField: "tracking_id",
+        as: "parcel_trackings",
+      },
+    },
+    {
+      $unwind: "$parcel_trackings",
+    },
+    {
+      $match: {
+        "parcel_trackings.status": "parcel_delivered",
+      },
+    },
+    {
+      $addFields: {
+        delivery_date: {
+          $substr: ["$parcel_trackings.created_at", 0, 10],
+        },
+      },
+    },
+    {
+      $group: {
+        _id: "$delivery_date",
+        date: { $first: "$delivery_date" },
+        delivery_count: { $sum: 1 },
+        last_delivery_time: { $last: "$parcel_trackings.created_at" },
+      },
+    },
+  ];
+
+  try {
+    const result = await parcelCollection.aggregate(pipeline).toArray();
+
+    res.send(result);
+  } catch (err) {
+    res.status(500).send({
+      success: false,
+      message: "Per day delivery status stats retrieved failed",
     });
   }
 };
@@ -114,8 +170,6 @@ const updateRiderStatus = async (req, res) => {
       ...result,
     });
   } catch (err) {
-    console.log(err);
-
     res.status(500).send({
       success: false,
       message: "Rider data update failed",
@@ -123,4 +177,9 @@ const updateRiderStatus = async (req, res) => {
   }
 };
 
-module.exports = { postRiderData, getRidersData, updateRiderStatus };
+module.exports = {
+  postRiderData,
+  getRidersData,
+  updateRiderStatus,
+  getPerDayDeliveryStats,
+};

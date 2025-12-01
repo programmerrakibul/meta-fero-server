@@ -4,7 +4,7 @@ const getTrackingsByTrackingId = async (req, res) => {
   const { tracking_id } = req.params;
 
   try {
-    const result = await trackingsCollection.find({tracking_id}).toArray();
+    const result = await trackingsCollection.find({ tracking_id }).toArray();
 
     res.send({
       success: true,
@@ -12,8 +12,6 @@ const getTrackingsByTrackingId = async (req, res) => {
       logs: result,
     });
   } catch (err) {
-    console.log(err);
-
     res.status(500).send({
       success: false,
       message: "Trackings data retrieved failed",

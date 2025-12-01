@@ -7,9 +7,10 @@ const { parcelsRouter } = require("./routes/parcelsRouter.js");
 const { checkoutRouter } = require("./routes/checkoutRouter.js");
 const { usersRouter } = require("./routes/usersRouter.js");
 const { ridersRouter } = require("./routes/ridersRouter.js");
+const { trackingsRouter } = require("./routes/trackingsRouter.js");
 const { validateToken } = require("./middleware/validateToken.js");
 const { verifyToken } = require("./middleware/verifyToken.js");
-const { trackingsRouter } = require("./routes/trackingsRouter.js");
+const { verifyRider } = require("./middleware/verifyRider.js");
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -27,7 +28,13 @@ const run = async () => {
 
     app.use("/api/trackings", trackingsRouter);
     app.use("/api/users", validateToken, verifyToken, usersRouter);
-    app.use("/api/riders", validateToken, verifyToken, ridersRouter);
+    app.use(
+      "/api/riders",
+      validateToken,
+      verifyToken,
+      verifyRider,
+      ridersRouter
+    );
     app.use("/api/parcels", validateToken, verifyToken, parcelsRouter);
     app.use("/api/parcel-checkout", validateToken, verifyToken, checkoutRouter);
     app.get(

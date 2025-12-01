@@ -1,12 +1,12 @@
 const { usersCollection } = require("../db.js");
 
-const verifyAdmin = async (req, res, next) => {
+const verifyRider = async (req, res, next) => {
   const email = req.decoded_email;
 
   try {
     const user = await usersCollection.findOne({ email });
 
-    if (!user || user.role !== "admin") {
+    if (!user || user.role !== "rider") {
       return res.status(403).send({
         message: "Forbidden access",
       });
@@ -20,4 +20,4 @@ const verifyAdmin = async (req, res, next) => {
   }
 };
 
-module.exports = { verifyAdmin };
+module.exports = { verifyRider };

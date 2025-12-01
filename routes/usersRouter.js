@@ -15,6 +15,6 @@ usersRouter.get("/:email/role", getUserRoll);
 
 usersRouter.post("/", postUserData);
 
-usersRouter.patch("/:id", updateUserDataById);
+usersRouter.patch("/:id",verifyAdmin, updateUserDataById);
 
 module.exports = { usersRouter };

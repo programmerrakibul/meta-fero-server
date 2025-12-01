@@ -1,11 +1,25 @@
 const { ObjectId } = require("mongodb");
 const { parcelCollection, ridersCollection } = require("../db.js");
 const { trackingLog } = require("../utilities/trackingLog.js");
-const { nanoid } = require("nanoid");
+
+const generateTrackingID = () => {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_&$#@!";
+  const date = new Date();
+  const prefix =
+    date.getFullYear().toString().slice(-2) +
+    (date.getMonth() + 1).toString().padStart(2, "0");
+
+  let id = prefix;
+  while (id.length < 24) {
+    id += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+
+  return `MF-PRCL-${id}`;
+};
 
 const postParcel = async (req, res) => {
   const newParcel = req.body;
-  const tracking_id = `MF-PRCL-${nanoid()}`;
+  const tracking_id = generateTrackingID();
   newParcel.tracking_id = tracking_id;
 
   try {

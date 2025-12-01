@@ -35,7 +35,7 @@ const run = async () => {
       verifyRider,
       ridersRouter
     );
-    app.use("/api/parcels", validateToken, verifyToken, parcelsRouter);
+    app.use("/api/parcels",  parcelsRouter);
     app.use("/api/parcel-checkout", validateToken, verifyToken, checkoutRouter);
     app.get(
       "/api/payment-history",

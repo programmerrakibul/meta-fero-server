@@ -223,10 +223,48 @@ const updateDeliveryStatus = async (req, res) => {
   }
 };
 
+const deliveryStatusStats = async (req, res) => {
+  try {
+    const pipeline = [
+      {
+        $group: {
+          _id: "$delivery_status",
+          count: {
+            $sum: 1,
+          },
+        },
+      },
+      {
+        $project: {
+          status: "$_id",
+          count: 1,
+          _id: 0,
+        },
+      },
+    ];
+
+    const result = await parcelCollection.aggregate(pipeline).toArray();
+
+    res.send({
+      success: true,
+      message: "Delivery status stats data successfully retrieved",
+      stats: result,
+    });
+  } catch (err) {
+    console.log(err);
+
+    res.status(500).send({
+      success: false,
+      message: "Delivery status stats data retrieved failed",
+    });
+  }
+};
+
 module.exports = {
   postParcel,
   getAllParcel,
   getParcelById,
   updateParcelDataAndRiderStatus,
   updateDeliveryStatus,
+  deliveryStatusStats,
 };

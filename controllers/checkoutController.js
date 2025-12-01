@@ -61,7 +61,7 @@ const updatePaymentStatus = async (req, res) => {
       paid_at: new Date().toISOString(),
     };
 
-    const delivery_status = "pending_pickup";
+    const delivery_status = "parcel_paid";
 
     const update = {
       $set: { payment_status, delivery_status },

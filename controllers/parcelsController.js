@@ -171,7 +171,7 @@ const updateDeliveryStatus = async (req, res) => {
   const riderQuery = { rider_email };
   let updatedParcelStatus = {};
 
-  if (delivery_status === "pending_pickup") {
+  if (delivery_status === "parcel_paid") {
     updatedParcelStatus = {
       $set: {
         delivery_status,

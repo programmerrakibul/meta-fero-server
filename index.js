@@ -10,7 +10,6 @@ const { ridersRouter } = require("./routes/ridersRouter.js");
 const { trackingsRouter } = require("./routes/trackingsRouter.js");
 const { validateToken } = require("./middleware/validateToken.js");
 const { verifyToken } = require("./middleware/verifyToken.js");
-const { verifyRider } = require("./middleware/verifyRider.js");
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -28,15 +27,10 @@ const run = async () => {
 
     app.use("/api/trackings", trackingsRouter);
     app.use("/api/users", validateToken, verifyToken, usersRouter);
-    app.use(
-      "/api/riders",
-      validateToken,
-      verifyToken,
-      verifyRider,
-      ridersRouter
-    );
+    app.use("/api/riders", validateToken, verifyToken, ridersRouter);
     app.use("/api/parcels", validateToken, verifyToken, parcelsRouter);
     app.use("/api/parcel-checkout", validateToken, verifyToken, checkoutRouter);
+    
     app.get(
       "/api/payment-history",
       validateToken,
@@ -67,8 +61,8 @@ const run = async () => {
       }
     );
 
-    await client.db("admin").command({ ping: 1 });
-    console.log("You successfully connected to MongoDB!");
+    // await client.db("admin").command({ ping: 1 });
+    // console.log("You successfully connected to MongoDB!");
 
     app.listen(port, () => {
       console.log("Server running in port: ", port);
